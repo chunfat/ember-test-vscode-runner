@@ -40,7 +40,7 @@ You can also toggle debug mode by running the command:
 
 - Visual Studio Code v1.60.0 or higher
 - Ember.js project with a functioning test suite
-- Default test runner URL is `http://intercom.test/tests` (can be customized in settings)
+- Default test runner URL is `http://localhost:4200/tests` (can be customized in settings)
 
 ## Extension Development
 
