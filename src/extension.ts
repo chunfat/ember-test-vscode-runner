@@ -91,7 +91,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 			vscode.commands.registerCommand('ember-test-runner.runModuleTests', (moduleName: string) => {
 					// moduleName already contains the full path with nested modules joined by " > "
-					const testRunnerBaseUrl = vscode.workspace.getConfiguration('emberTestRunner').get('testRunnerBaseUrl', 'http://intercom.test/tests');
+					const testRunnerBaseUrl = vscode.workspace.getConfiguration('emberTestRunner').get('testRunnerBaseUrl', 'http://localhost:4200/tests');
 					const url = `${testRunnerBaseUrl}?hidepassed&filter=${encodeURIComponent(moduleName)}`;
 					log(`Running module tests for ${moduleName} at ${url}`, 'debug');
 					vscode.env.openExternal(vscode.Uri.parse(url));
@@ -101,7 +101,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 			vscode.commands.registerCommand('ember-test-runner.runSingleTest', (moduleName: string, testName: string) => {
 					// Use the full module path (including parent modules) for uniqueness
-					const testRunnerBaseUrl = vscode.workspace.getConfiguration('emberTestRunner').get('testRunnerBaseUrl', 'http://intercom.test/tests');
+					const testRunnerBaseUrl = vscode.workspace.getConfiguration('emberTestRunner').get('testRunnerBaseUrl', 'http://localhost:4200`/tests');
 					const filter = `${moduleName}: ${testName}`;
 					const url = `${testRunnerBaseUrl}?hidepassed&filter=${encodeURIComponent(filter)}`;
 					log(`Running test "${testName}" in module "${moduleName}" with filter: ${filter}`, 'debug');
