@@ -247,7 +247,11 @@ class EmberTestCodeLensProvider implements vscode.CodeLensProvider {
 				node.body.forEach((statement: any) => {
 					const result = processStatement(statement);
 					if (result) {
-						rootModule.children!.push(result);
+						if (Array.isArray(result)) {
+							rootModule.children!.push(...result);
+						} else {
+							rootModule.children!.push(result);
+						}
 					}
 				});
 			}
@@ -256,19 +260,74 @@ class EmberTestCodeLensProvider implements vscode.CodeLensProvider {
 		}
 	
 		// Process a statement (expression or declaration)
-		function processStatement(node: any): TestNode | null {
+		function processStatement(node: any): TestNode | null | TestNode[] {
 			if (!node) return null;
 	
 			// For expression statements (most test framework calls)
 			if (node.type === 'ExpressionStatement') {
 				return processExpression(node.expression, node.start);
 			}
+			
+			// Handle loops that might contain test calls
+			if (node.type === 'ForStatement' || 
+				node.type === 'ForInStatement' || 
+				node.type === 'ForOfStatement' || 
+				node.type === 'WhileStatement' || 
+				node.type === 'DoWhileStatement') {
+				
+				if (node.body && node.body.type === 'BlockStatement') {
+					const results: TestNode[] = [];
+					node.body.body.forEach((statement: any) => {
+						const result = processStatement(statement);
+						if (result) {
+							if (Array.isArray(result)) {
+								results.push(...result);
+							} else {
+								results.push(result);
+							}
+						}
+					});
+					return results.length > 0 ? results : null;
+				}
+			}
+			
+			// Handle array methods with callbacks that might contain test calls (.forEach, .map, etc.)
+			if (node.type === 'ExpressionStatement' && 
+				node.expression.type === 'CallExpression' && 
+				node.expression.callee.type === 'MemberExpression') {
+				
+				const methodName = node.expression.callee.property.type === 'Identifier' ? 
+					node.expression.callee.property.name : '';
+				
+				if (['forEach', 'map', 'filter', 'every', 'some'].includes(methodName) && 
+					node.expression.arguments.length > 0) {
+					
+					const callback = node.expression.arguments[0];
+					if ((callback.type === 'ArrowFunctionExpression' || 
+						callback.type === 'FunctionExpression') && 
+						callback.body.type === 'BlockStatement') {
+						
+						const results: TestNode[] = [];
+						callback.body.body.forEach((statement: any) => {
+							const result = processStatement(statement);
+							if (result) {
+								if (Array.isArray(result)) {
+									results.push(...result);
+								} else {
+									results.push(result);
+								}
+							}
+						});
+						return results.length > 0 ? results : null;
+					}
+				}
+			}
 	
 			return null;
 		}
 	
 		// Process expressions (function calls)
-		function processExpression(node: any, position: number): TestNode | null {
+		function processExpression(node: any, position: number): TestNode | null | TestNode[] {
 			if (!node) return null;
 	
 			// Check for call expressions (function calls like describe(), it())
@@ -291,6 +350,9 @@ class EmberTestCodeLensProvider implements vscode.CodeLensProvider {
 					// Extract module name from string literal
 					if (firstArg.type === 'StringLiteral') {
 						moduleName = firstArg.value;
+					} else if (firstArg.type === 'TemplateLiteral' && firstArg.quasis.length > 0) {
+						// Handle template literals for module names
+						moduleName = firstArg.quasis[0].value.cooked;
 					}
 	
 					// Process the callback function for nested tests/modules
@@ -302,7 +364,11 @@ class EmberTestCodeLensProvider implements vscode.CodeLensProvider {
 								callback.body.body.forEach((statement: any) => {
 									const result = processStatement(statement);
 									if (result) {
-										children.push(result);
+										if (Array.isArray(result)) {
+											children.push(...result);
+										} else {
+											children.push(result);
+										}
 									}
 								});
 							}
@@ -325,6 +391,9 @@ class EmberTestCodeLensProvider implements vscode.CodeLensProvider {
 					// Extract test name from string literal
 					if (firstArg.type === 'StringLiteral') {
 						testName = firstArg.value;
+					} else if (firstArg.type === 'TemplateLiteral') {
+						// Handle template literals for test names, only keep the part before the variable
+						testName = firstArg.quasis[0].value.cooked;
 					}
 	
 					return {
@@ -332,6 +401,32 @@ class EmberTestCodeLensProvider implements vscode.CodeLensProvider {
 						name: testName,
 						position: position || node.start
 					};
+				}
+				
+				// Handle array methods with callbacks that might contain test calls
+				if (callee.type === 'MemberExpression' && 
+					callee.property.type === 'Identifier' && 
+					['forEach', 'map', 'filter', 'every', 'some'].includes(callee.property.name) && 
+					node.arguments.length > 0) {
+					
+					const callback = node.arguments[0];
+					if ((callback.type === 'ArrowFunctionExpression' || 
+						callback.type === 'FunctionExpression') && 
+						callback.body.type === 'BlockStatement') {
+						
+						const results: TestNode[] = [];
+						callback.body.body.forEach((statement: any) => {
+							const result = processStatement(statement);
+							if (result) {
+								if (Array.isArray(result)) {
+									results.push(...result);
+								} else {
+									results.push(result);
+								}
+							}
+						});
+						return results.length > 0 ? results : null;
+					}
 				}
 			}
 	
