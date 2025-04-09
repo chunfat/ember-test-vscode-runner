@@ -32,6 +32,7 @@ Tests will open in your default browser using the configured test runner URL.
 This extension contributes the following settings:
 
 - `emberTestRunner.debug`: Enable/disable debug mode
+- `emberTestRunner.testRunnerBaseUrl`: Configure the base URL for the test runner (default: `http://localhost:4200/tests`)
 
 You can also toggle debug mode by running the command:
 - `Ember Test Runner: Toggle Debug Mode`
@@ -40,7 +41,6 @@ You can also toggle debug mode by running the command:
 
 - Visual Studio Code v1.60.0 or higher
 - Ember.js project with a functioning test suite
-- Default test runner URL is `http://localhost:4200/tests` (can be customized in settings)
 
 ## Extension Development
 

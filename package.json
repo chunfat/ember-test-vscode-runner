@@ -1,5 +1,6 @@
 {
   "name": "ember-test-runner",
+  "icon": "assets/logo.png",
   "displayName": "Ember Test Runner",
   "description": "Run Ember tests directly from VSCode",
   "publisher": "chunfattai",
