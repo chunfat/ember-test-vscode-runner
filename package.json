@@ -3,6 +3,10 @@
   "displayName": "Ember Test Runner",
   "description": "Run Ember tests directly from VSCode",
   "publisher": "chunfattai",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chunfat/ember-test-vscode-runner.git"
+  },
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.60.0"
@@ -20,7 +24,22 @@
         "command": "ember-test-runner.toggleDebug",
         "title": "Ember Test Runner: Toggle Debug Mode"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Ember Test Runner",
+      "properties": {
+        "emberTestRunner.debug": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable debug mode for the Ember Test Runner"
+        },
+        "emberTestRunner.testRunnerBaseUrl": {
+          "type": "string",
+          "default": "http://localhost:4200/tests",
+          "description": "Base URL for the Ember test runner"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

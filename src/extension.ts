@@ -3,9 +3,6 @@ import * as fs from 'fs';
 import { parse, ParseResult } from '@babel/parser';
 import { File } from '@babel/types';
 
-// Base URL for the test runner
-const TEST_RUNNER_BASE_URL = 'http://intercom.test/tests';
-
 let debugMode = false;
 let outputChannel: vscode.OutputChannel;
 
@@ -64,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
 		log(`Failed to create global storage directory: ${error instanceof Error ? error.message : String(error)}`, 'error');
 	}
 	
-	// Get debug setting
+	// Get settings
 	const config = vscode.workspace.getConfiguration('emberTestRunner');
 	debugMode = config.get('debug', false);
 	
@@ -94,7 +91,8 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 			vscode.commands.registerCommand('ember-test-runner.runModuleTests', (moduleName: string) => {
 					// moduleName already contains the full path with nested modules joined by " > "
-					const url = `${TEST_RUNNER_BASE_URL}?hidepassed&filter=${encodeURIComponent(moduleName)}`;
+					const testRunnerBaseUrl = vscode.workspace.getConfiguration('emberTestRunner').get('testRunnerBaseUrl', 'http://intercom.test/tests');
+					const url = `${testRunnerBaseUrl}?hidepassed&filter=${encodeURIComponent(moduleName)}`;
 					log(`Running module tests for ${moduleName} at ${url}`, 'debug');
 					vscode.env.openExternal(vscode.Uri.parse(url));
 			})
@@ -103,8 +101,9 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 			vscode.commands.registerCommand('ember-test-runner.runSingleTest', (moduleName: string, testName: string) => {
 					// Use the full module path (including parent modules) for uniqueness
+					const testRunnerBaseUrl = vscode.workspace.getConfiguration('emberTestRunner').get('testRunnerBaseUrl', 'http://intercom.test/tests');
 					const filter = `${moduleName}: ${testName}`;
-					const url = `${TEST_RUNNER_BASE_URL}?hidepassed&filter=${encodeURIComponent(filter)}`;
+					const url = `${testRunnerBaseUrl}?hidepassed&filter=${encodeURIComponent(filter)}`;
 					log(`Running test "${testName}" in module "${moduleName}" with filter: ${filter}`, 'debug');
 					vscode.env.openExternal(vscode.Uri.parse(url));
 			})
