@@ -2,6 +2,9 @@
 
 A Visual Studio Code extension for running Ember.js tests directly from your editor.
 
+![CodeLens Integration Example](assets/example.png)
+*Showing run buttons above module and individual tests*
+
 ## Features
 
 - Run individual tests with a single click
